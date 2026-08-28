@@ -912,12 +912,99 @@ def planner():
     """.replace('{user}', user)
     return render_template_string(PLANNER_HTML)
 
+def get_default_study_plan():
+    """기능사 합격을 위한 4개월 학습 계획 (2026년 9월~12월)"""
+    plan = {
+        # 9월 1주 (기초 다지기)
+        "2026-9-1": {"tasks": [{"text": "🎓 냉동기계 기본개념 학습", "done": False}, {"text": "📖 냉매의 성질 복습", "done": False}]},
+        "2026-9-2": {"tasks": [{"text": "📝 공기조화 기초 개념 정리", "done": False}, {"text": "✍️ 필기 핵심용어 암기", "done": False}]},
+        "2026-9-3": {"tasks": [{"text": "🎯 2014년 필기 기출 1-15번 풀이", "done": False}]},
+        "2026-9-4": {"tasks": [{"text": "📚 약점 분석 및 복습", "done": False}]},
+        "2026-9-5": {"tasks": [{"text": "💪 모의고사 풀이 (기초)", "done": False}]},
+        
+        # 9월 2주
+        "2026-9-8": {"tasks": [{"text": "🔄 2014년 필기 16-30번 풀이", "done": False}]},
+        "2026-9-9": {"tasks": [{"text": "📖 냉동기계 심화 개념 학습", "done": False}]},
+        "2026-9-10": {"tasks": [{"text": "✍️ 중요 공식 정리 및 암기", "done": False}]},
+        
+        # 9월 3주
+        "2026-9-15": {"tasks": [{"text": "🎯 2014년 필기 31-45번 풀이", "done": False}]},
+        "2026-9-16": {"tasks": [{"text": "📚 2015년 필기 1-15번 풀이", "done": False}]},
+        "2026-9-17": {"tasks": [{"text": "💪 주간 복습 및 약점 정리", "done": False}]},
+        
+        # 9월 4주
+        "2026-9-22": {"tasks": [{"text": "🎯 2015년 필기 16-45번 풀이", "done": False}]},
+        "2026-9-23": {"tasks": [{"text": "🔄 2016년 필기 1-15번 풀이", "done": False}]},
+        "2026-9-24": {"tasks": [{"text": "📚 월간 종합 복습", "done": False}]},
+        
+        # 10월 1주 (심화 학습)
+        "2026-10-1": {"tasks": [{"text": "🎯 2016년 필기 16-45번 풀이", "done": False}]},
+        "2026-10-2": {"tasks": [{"text": "📖 냉동사이클 심화 학습", "done": False}]},
+        "2026-10-3": {"tasks": [{"text": "✍️ 응축기, 증발기 이론 정리", "done": False}]},
+        
+        # 10월 2주
+        "2026-10-6": {"tasks": [{"text": "🎯 2017년 필기 1-30번 풀이", "done": False}]},
+        "2026-10-7": {"tasks": [{"text": "📚 2017년 필기 31-45번 풀이", "done": False}]},
+        "2026-10-8": {"tasks": [{"text": "💪 약점 부분 집중 복습", "done": False}]},
+        
+        # 10월 3주
+        "2026-10-13": {"tasks": [{"text": "🎯 2018년 필기 1-30번 풀이", "done": False}]},
+        "2026-10-14": {"tasks": [{"text": "📚 2018년 필기 31-45번 풀이", "done": False}]},
+        "2026-10-15": {"tasks": [{"text": "🔄 모의고사 풀이 (심화)", "done": False}]},
+        
+        # 10월 4주
+        "2026-10-20": {"tasks": [{"text": "🎯 2019년 필기 1-30번 풀이", "done": False}]},
+        "2026-10-21": {"tasks": [{"text": "📚 2019년 필기 31-45번 풀이", "done": False}]},
+        "2026-10-22": {"tasks": [{"text": "💪 월간 모의고사", "done": False}]},
+        
+        # 11월 1주 (실기 필답형)
+        "2026-11-3": {"tasks": [{"text": "🎯 2020년 필기 1-30번 풀이", "done": False}]},
+        "2026-11-4": {"tasks": [{"text": "📚 2020년 필기 31-45번 풀이", "done": False}]},
+        "2026-11-5": {"tasks": [{"text": "✍️ 필기 전 영역 총정리", "done": False}]},
+        
+        # 11월 2주
+        "2026-11-10": {"tasks": [{"text": "🛠️ 실기 필답형 1번 (과열도) 연습", "done": False}]},
+        "2026-11-11": {"tasks": [{"text": "🛠️ 실기 필답형 2-3번 연습", "done": False}]},
+        "2026-11-12": {"tasks": [{"text": "🛠️ 실기 필답형 4-5번 연습", "done": False}]},
+        
+        # 11월 3주
+        "2026-11-17": {"tasks": [{"text": "🛠️ 실기 필답형 6-7번 연습", "done": False}]},
+        "2026-11-18": {"tasks": [{"text": "🛠️ 실기 필답형 8번 연습", "done": False}]},
+        "2026-11-19": {"tasks": [{"text": "💪 주간 필답형 복습", "done": False}]},
+        
+        # 11월 4주
+        "2026-11-24": {"tasks": [{"text": "🎯 필답형 전 영역 모의고사", "done": False}]},
+        "2026-11-25": {"tasks": [{"text": "📚 약점 필답형 재연습", "done": False}]},
+        "2026-11-26": {"tasks": [{"text": "💪 월간 종합 복습", "done": False}]},
+        
+        # 12월 1주 (시뮬레이션 & 종합)
+        "2026-12-1": {"tasks": [{"text": "🛠️ 실기 시뮬레이션: 동관절단", "done": False}]},
+        "2026-12-2": {"tasks": [{"text": "🛠️ 실기 시뮬레이션: 플레어링-밴딩", "done": False}]},
+        "2026-12-3": {"tasks": [{"text": "🛠️ 실기 시뮬레이션: 연결-용접", "done": False}]},
+        
+        # 12월 2주
+        "2026-12-8": {"tasks": [{"text": "🛠️ 실기 시뮬레이션: 냉각-작동점검", "done": False}]},
+        "2026-12-9": {"tasks": [{"text": "🎯 필기 전체 최종 복습 (중요도순)", "done": False}]},
+        "2026-12-10": {"tasks": [{"text": "💪 필기 최종 모의고사", "done": False}]},
+        
+        # 12월 3주
+        "2026-12-15": {"tasks": [{"text": "✍️ 필답형 최종 복습", "done": False}]},
+        "2026-12-16": {"tasks": [{"text": "🛠️ 시뮬레이션 최종 점검", "done": False}]},
+        "2026-12-17": {"tasks": [{"text": "💪 최종 종합 모의고사", "done": False}]},
+        
+        # 12월 4주
+        "2026-12-22": {"tasks": [{"text": "🎯 약점 최종 정리", "done": False}]},
+        "2026-12-23": {"tasks": [{"text": "📚 시험 전 마지막 복습", "done": False}]},
+        "2026-12-24": {"tasks": [{"text": "✨ 컨디션 조절 및 휴식", "done": False}]},
+    }
+    return plan
+
 @app.route("/api/planner/get")
 def get_planner():
     user = request.args.get("user", "demo")
     month = request.args.get("month", str(date.today().year)+"-"+str(date.today().month))
     if user not in PLANNER_DATA:
-        PLANNER_DATA[user] = {}
+        PLANNER_DATA[user] = get_default_study_plan()
     return jsonify(PLANNER_DATA[user])
 
 @app.route("/api/planner/save", methods=["POST"])
