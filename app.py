@@ -719,6 +719,14 @@ def planner():
                     <h3 id="modalTitle">2026년 8월 28일</h3>
                     <span class="close-btn" onclick="closeModal()">&times;</span>
                 </div>
+                
+                <div id="recommendationBox" style="display:none;background:#f0f4f8;padding:15px;border-left:4px solid #4d7ec7;margin:15px 0;border-radius:6px;">
+                    <h4 style="color:#2c5aa0;margin-bottom:10px;">💡 오늘의 학습 추천</h4>
+                    <p id="recommendationText" style="color:#1a3a4a;margin-bottom:15px;line-height:1.6;"></p>
+                    <h5 style="color:#2c5aa0;margin-top:15px;margin-bottom:8px;">📚 학습 팁:</h5>
+                    <ul id="tipsList" style="margin-left:20px;color:#1a3a4a;"></ul>
+                </div>
+                
                 <div class="task-form">
                     <div class="form-group">
                         <label>📝 계획 입력 (무엇을 할건가요?)</label>
@@ -805,6 +813,22 @@ def planner():
                 const dayData = plannerData[dateKey] || {tasks:[]};
                 document.getElementById('modalTitle').textContent = formatDate(d);
                 document.getElementById('taskInput').value = '';
+                
+                const recBox = document.getElementById('recommendationBox');
+                if(dayData.recommendation){
+                    recBox.style.display = 'block';
+                    document.getElementById('recommendationText').textContent = dayData.recommendation;
+                    const tipsList = document.getElementById('tipsList');
+                    tipsList.innerHTML = '';
+                    (dayData.tips || []).forEach(tip => {
+                        const li = document.createElement('li');
+                        li.textContent = tip;
+                        li.style.marginBottom = '8px';
+                        tipsList.appendChild(li);
+                    });
+                } else {
+                    recBox.style.display = 'none';
+                }
                 
                 const tasksList = document.getElementById('tasksList');
                 tasksList.innerHTML = '';
@@ -916,11 +940,11 @@ def get_default_study_plan():
     """기능사 합격을 위한 4개월 학습 계획 (2026년 9월~12월)"""
     plan = {
         # 9월 1주 (기초 다지기)
-        "2026-9-1": {"tasks": [{"text": "🎓 냉동기계 기본개념 학습", "done": False}, {"text": "📖 냉매의 성질 복습", "done": False}]},
-        "2026-9-2": {"tasks": [{"text": "📝 공기조화 기초 개념 정리", "done": False}, {"text": "✍️ 필기 핵심용어 암기", "done": False}]},
-        "2026-9-3": {"tasks": [{"text": "🎯 2014년 필기 기출 1-15번 풀이", "done": False}]},
-        "2026-9-4": {"tasks": [{"text": "📚 약점 분석 및 복습", "done": False}]},
-        "2026-9-5": {"tasks": [{"text": "💪 모의고사 풀이 (기초)", "done": False}]},
+        "2026-9-1": {"tasks": [{"text": "🎓 냉동기계 기본개념 학습", "done": False}, {"text": "📖 냉매의 성질 복습", "done": False}], "recommendation": "냉동기계의 작동 원리와 냉매의 역할을 이해하는 것이 기초입니다. 교재 1-2장을 정독하고, 각 장치의 기능을 그림으로 그려보세요.", "tips": ["냉매의 상변화 과정을 반복해서 이해하기", "동영상 강의로 시각적 학습하기", "핵심 용어를 노트에 정리하기"]},
+        "2026-9-2": {"tasks": [{"text": "📝 공기조화 기초 개념 정리", "done": False}, {"text": "✍️ 필기 핵심용어 암기", "done": False}], "recommendation": "공기조화 시스템의 구조와 습공기선도를 이해해야 합니다. 건구온도, 습구온도, 절대습도 등 기본 용어를 완벽히 암기하세요.", "tips": ["습공기선도(심롤선도) 그리는 연습", "온도와 습도 관계식 암기", "기본 용어 카드 만들기"]},
+        "2026-9-3": {"tasks": [{"text": "🎯 2014년 필기 기출 1-15번 풀이", "done": False}], "recommendation": "가장 기본적인 기출문제입니다. 문제를 풀 때 선택지마다 왜 맞고 왜 틀렸는지 설명할 수 있을 때까지 복습하세요.", "tips": ["오답노트 작성하기", "각 선택지 분석하기", "시간 재고 풀기"]},
+        "2026-9-4": {"tasks": [{"text": "📚 약점 분석 및 복습", "done": False}], "recommendation": "9월 1-3일 학습 내용에서 틀린 부분을 정리하고, 같은 주제의 문제를 다시 풀어보세요.", "tips": ["오답 부분 재학습", "유사 문제 찾아서 풀기", "약점 부분 강의영상 재시청"]},
+        "2026-9-5": {"tasks": [{"text": "💪 모의고사 풀이 (기초)", "done": False}], "recommendation": "주간 첫 번째 모의고사입니다. 시간 제약 없이 풀어보고, 정답률을 기록해두세요. 60점 이상이 목표입니다.", "tips": ["편한 환경에서 풀기", "정답률 기록", "틀린 문제 분류하기"]},
         
         # 9월 2주
         "2026-9-8": {"tasks": [{"text": "🔄 2014년 필기 16-30번 풀이", "done": False}]},
