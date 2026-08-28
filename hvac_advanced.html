@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛠️ 공조냉동 3D 실습 시뮬레이터</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: #fff; }
+        
+        #canvas { display: block; width: 100%; height: 100vh; }
+        
+        #ui {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        .header {
+            position: fixed;
+            top: 10px; left: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px 20px;
+            border-radius: 8px;
+            pointer-events: auto;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .panel {
+            position: fixed;
+            background: rgba(0,0,0,0.85);
+            border-radius: 8px;
+            padding: 20px;
+            pointer-events: auto;
+            color: #fff;
+        }
+        
+        .left-panel {
+            top: 100px;
+            left: 10px;
+            width: 300px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .right-panel {
+            top: 100px;
+            right: 10px;
+            width: 280px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .task-button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .task-button:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .task-button.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+        
+        .info-box {
+            background: rgba(102, 126, 234, 0.2);
+            padding: 10px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-size: 13px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .inventory-item {
+            background: rgba(245, 87, 108, 0.15);
+            padding: 10px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-size: 12px;
+            border-left: 3px solid #f5576c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .inventory-count {
+            background: #f5576c;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        
+        .slider-container {
+            margin: 10px 0;
+        }
+        
+        .slider-container label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            outline: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: auto;
+        }
+        
+        .message.show {
+            opacity: 1;
+        }
+        
+        .cursor-custom {
+            cursor: crosshair;
+        }
+        
+        .status-light {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4CAF50;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { background: #4CAF50; }
+            50% { background: #45a049; }
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div id="ui">
+        <div class="header">
+            <h1>🛠️ 공조냉동 실습 시뮬레이터</h1>
+            <p><span class="status-light"></span>3D 작업 시뮬레이션</p>
+        </div>
+        
+        <div class="left-panel">
+            <div class="section-title">📋 작업 목록</div>
+            <button class="task-button" onclick="selectTask(1)">1️⃣ 동관 자르기</button>
+            <button class="task-button" onclick="selectTask(2)">2️⃣ 파이프 드릴링</button>
+            <button class="task-button" onclick="selectTask(3)">3️⃣ 부품 연결</button>
+            <button class="task-button" onclick="selectTask(4)">4️⃣ 황동 용접</button>
+            <button class="task-button" onclick="selectTask(5)">5️⃣ 냉각 작업</button>
+            <button class="task-button" onclick="selectTask(6)">6️⃣ 밴딩 작업</button>
+            <button class="task-button" onclick="selectTask(7)">7️⃣ 플레어링</button>
+            <button class="task-button" onclick="selectTask(8)">8️⃣ 최종 용접</button>
+            
+            <div class="section-title">⚙️ 설정</div>
+            <div class="slider-container">
+                <label for="lengthSlider">동관 길이: <span id="lengthValue">150</span>mm</label>
+                <input type="range" id="lengthSlider" min="50" max="350" value="150" 
+                    oninput="updateLength(this.value)">
+            </div>
+            
+            <div class="slider-container">
+                <label for="angleSlider">밴딩 각도: <span id="angleValue">90</span>°</label>
+                <input type="range" id="angleSlider" min="0" max="180" value="90" 
+                    oninput="updateAngle(this.value)">
+            </div>
+            
+            <div class="section-title">🎮 컨트롤</div>
+            <button class="task-button" style="background: linear-gradient(135deg, #4CAF50, #45a049);" 
+                onclick="executeTask()">▶️ 작업 시작</button>
+            <button class="task-button" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);" 
+                onclick="resetAll()">🔄 초기화</button>
+        </div>
+        
+        <div class="right-panel">
+            <div class="section-title">📊 진행 상황</div>
+            <div class="info-box" id="currentTask">현재 작업: 대기 중</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="info-box" id="progressText">진행률: 0%</div>
+            
+            <div class="section-title">📦 인벤토리</div>
+            <div id="inventoryList"></div>
+            
+            <div class="section-title">📍 작업 상태</div>
+            <div class="info-box" id="taskStatus">대기 중...</div>
+            <div class="info-box" id="coordinates">마우스: (-, -)</div>
+            
+            <div class="section-title">🏆 완료 작업</div>
+            <div class="info-box" id="completedTasks">0 / 8 작업 완료</div>
+        </div>
+    </div>
+    
+    <div class="message" id="message"></div>
+
+    <script>
+        // Three.js 초기화
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a0a);
+        scene.fog = new THREE.Fog(0x0a0a0a, 100, 1000);
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        camera.position.set(0, 8, 15);
+        camera.lookAt(0, 0, 0);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFShadowShadowMap;
+        document.body.appendChild(renderer.domElement);
+        
+        // 조명
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 20, 10);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        scene.add(directionalLight);
+        
+        // 작업 테이블
+        const tableGeometry = new THREE.BoxGeometry(20, 0.5, 15);
+        const tableMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x3a3a3a, 
+            metalness: 0.6, 
+            roughness: 0.4 
+        });
+        const table = new THREE.Mesh(tableGeometry, tableMaterial);
+        table.position.y = 0;
+        table.castShadow = true;
+        table.receiveShadow = true;
+        scene.add(table);
+        
+        // 바닥
+        const floorGeometry = new THREE.PlaneGeometry(50, 50);
+        const floorMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x1a1a1a, 
+            roughness: 0.8 
+        });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -0.3;
+        floor.receiveShadow = true;
+        scene.add(floor);
+        
+        // 상태 변수
+        let currentTask = 0;
+        let tubeLength = 150;
+        let bendingAngle = 90;
+        let taskProgress = 0;
+        let inventory = {
+            cutTubes: 0,
+            drilledPipes: 0,
+            connectedParts: 0,
+            weldedAssemblies: 0,
+            cooledParts: 0,
+            bentTubes: 0,
+            flaredEnds: 0
+        };
+        let completedTasks = 0;
+        const objects = [];
+        
+        // 메시지 표시 함수
+        function showMessage(text, duration = 2000) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), duration);
+        }
+        
+        // 진행률 업데이트
+        function updateProgress(percent) {
+            taskProgress = Math.min(100, percent);
+            document.getElementById('progressFill').style.width = taskProgress + '%';
+            document.getElementById('progressText').textContent = `진행률: ${Math.floor(taskProgress)}%`;
+        }
+        
+        // 작업 선택
+        function selectTask(taskNum) {
+            currentTask = taskNum;
+            const buttons = document.querySelectorAll('.task-button');
+            buttons.forEach((btn, idx) => {
+                if (idx === taskNum - 1) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            
+            const taskNames = [
+                '동관 자르기',
+                '파이프 드릴링',
+                '부품 연결',
+                '황동 용접',
+                '냉각 작업',
+                '밴딩 작업',
+                '플레어링',
+                '최종 용접'
+            ];
+            document.getElementById('currentTask').textContent = '현재 작업: ' + taskNames[taskNum - 1];
+            updateProgress(0);
+        }
+        
+        // 길이 업데이트
+        function updateLength(value) {
+            tubeLength = parseInt(value);
+            document.getElementById('lengthValue').textContent = value;
+        }
+        
+        // 각도 업데이트
+        function updateAngle(value) {
+            bendingAngle = parseInt(value);
+            document.getElementById('angleValue').textContent = value;
+        }
+        
+        // 3D 동관 생성
+        function createTube(length, x, y, z) {
+            const geometry = new THREE.CylinderGeometry(0.2, 0.2, length / 100, 16);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: 0xb57315, 
+                metalness: 0.8, 
+                roughness: 0.2 
+            });
+            const tube = new THREE.Mesh(geometry, material);
+            tube.rotation.z = Math.PI / 2;
+            tube.position.set(x, y, z);
+            tube.castShadow = true;
+            tube.receiveShadow = true;
+            scene.add(tube);
+            objects.push(tube);
+            return tube;
+        }
+        
+        // 작업 실행
+        function executeTask() {
+            if (currentTask === 0) {
+                showMessage('먼저 작업을 선택해주세요!');
+                return;
+            }
+            
+            updateProgress(0);
+            document.getElementById('taskStatus').textContent = '작업 진행 중...';
+            
+            // 각 작업별 시뮬레이션
+            switch(currentTask) {
+                case 1: // 동관 자르기
+                    simulateCutting();
+                    break;
+                case 2: // 파이프 드릴링
+                    simulateDrilling();
+                    break;
+                case 3: // 부품 연결
+                    simulateConnection();
+                    break;
+                case 4: // 황동 용접
+                    simulateWelding();
+                    break;
+                case 5: // 냉각 작업
+                    simulateCooling();
+                    break;
+                case 6: // 밴딩 작업
+                    simulateBending();
+                    break;
+                case 7: // 플레어링
+                    simulateFlaring();
+                    break;
+                case 8: // 최종 용접
+                    simulateFinalWelding();
+                    break;
+            }
+        }
+        
+        // 1. 동관 자르기
+        function simulateCutting() {
+            const steps = 50;
+            let step = 0;
+            const interval = setInterval(() => {
+                step++;
+                updateProgress((step / steps) * 100);
+                document.getElementById('taskStatus').textContent = `동관 자르는 중... (${tubeLength}mm)`;
+                
+                if (step >= steps) {
+                    clearInterval(interval);
+                    inventory.cutTubes++;
+                    completedTasks++;
+                    createTube(tubeLength, -5, 1, 0);
+                    showMessage(`✅ 동관 ${tubeLength}mm 자르기 완료!`);
+                    updateInventory();
+                    updateCompleted();
+                }
+            }, 30);
+        }
+        
+        // 2. 파이프 드릴링
+        function simulateDrilling() {
+            const steps = 60;
+            let step = 0;
+            const interval = setInterval(() => {
+                step++;
+                updateProgress((step / steps) * 100);
+                document.getElementById('taskStatus').textContent = '드릴링 머신 작동 중...';
+                
+                if (step >= steps) {
+                    clearInterval(interval);
+                    inventory.drilledPipes++;
+                    completedTasks++;
+                    createTube(10, 0, 1, 0);
+                    showMessage('✅ 파이프 드릴링 완료!');
+                    updateInventory();
+                    updateCompleted();
+                }
+            }, 25);
+        }
+        
+        // 3. 부품 연결
+        function simulateConnection() {
+            const steps = 30;
+            let step = 0;
+            const interval = setInterval(() => {
+                step++;
+                updateProgress((step / steps) * 100);
+                document.getElementById('taskStatus').textContent = '부품 연결 중... (로딩)';
+                
+                if (step >= steps) {
+                    clearInterval(interval);
+                    inventory.connectedParts++;
+                    completedTasks++;
+                    showMessage('✅ 부품 연결 완료!');
+                    updateInventory();
+                    updateCompleted();
+                }
+            }, 100);
+        }
+        
+        // 4. 황동 용접
+        function simulateWelding() {
+            const steps = 90;
+            let step = 0;
+            const interval = setInterval(() => {
+                step++;
+                updateProgress((step / steps) * 100);
+                document.getElementById('taskStatus').textContent = `용접 중... (${Math.ceil((steps - step) / 10)}초)`;
+                
+                if (step >= steps) {
+                    clearInterval(interval);
+                    inventory.weldedAssemblies++;
+                    completedTasks++;
+                    showMessage('✅ 황동 용접 완료! (9초)');
+                    updateInventory();
+                    updateCompleted();
+                }
+            }, 100);
+        }
+        
+        // 5. 냉각 작업
+        function simulateCooling() {
+            const steps = 50;
+            let step = 0;
+            const interval = setInterval(() => {
+                step++;
+                updateProgress((step / steps) * 100);
+                document.getElementById('taskStatus').textContent = `냉각 중... (${Math.ceil((steps - step) / 10)}초)`;
+                
+                if (step >= steps) {
+                    clearInterval(interval);
+                    inventory.cooledParts++;
+                    completedTasks++;
+                    showMessage('❄️ 냉각이 완료되었습니다!');
+                    updateInventory();
+                    updateCompleted();
+                }
+            }, 100);
+        }
+        
+        // 6. 밴딩 작업
+        function simulateBending() {
+            const steps = 40;
+            let step = 0;
+            const interval = setInterval(() => {
+                step++;
+                updateProgress((step / steps) * 100);
+                document.getElementById('taskStatus').textContent = `밴딩 중... (${bendingAngle}°)`;
+                
+                if (step >= steps) {
+                    clearInterval(interval);
+                    inventory.bentTubes++;
+                    completedTasks++;
+                    showMessage(`✅ 밴딩이 완료되었습니다! (${bendingAngle}°)`);
+                    updateInventory();
+                    updateCompleted();
+                }
+            }, 50);
+        }
+        
+        // 7. 플레어링
+        function simulateFlaring() {
+            const steps = 30;
+            let step = 0;
+            const interval = setInterval(() => {
+                step++;
+                updateProgress((step / steps) * 100);
+                document.getElementById('taskStatus').textContent = '플레어링 중...';
+                
+                if (step >= steps) {
+                    clearInterval(interval);
+                    inventory.flaredEnds++;
+                    completedTasks++;
+                    showMessage('✅ 플레어링 완료!');
+                    updateInventory();
+                    updateCompleted();
+                }
+            }, 60);
+        }
+        
+        // 8. 최종 용접
+        function simulateFinalWelding() {
+            const steps = 100;
+            let step = 0;
+            const interval = setInterval(() => {
+                step++;
+                updateProgress((step / steps) * 100);
+                document.getElementById('taskStatus').textContent = `최종 용접 중... (🔥 불 타올 중)`;
+                
+                if (step >= steps) {
+                    clearInterval(interval);
+                    completedTasks++;
+                    showMessage('🌟 모든 작업이 완료되어 최종 제품이 만들어졌습니다!');
+                    updateCompleted();
+                }
+            }, 100);
+        }
+        
+        // 인벤토리 업데이트
+        function updateInventory() {
+            let html = '';
+            if (inventory.cutTubes > 0) html += `<div class="inventory-item">동관 <span class="inventory-count">${inventory.cutTubes}</span></div>`;
+            if (inventory.drilledPipes > 0) html += `<div class="inventory-item">드릴링 파이프 <span class="inventory-count">${inventory.drilledPipes}</span></div>`;
+            if (inventory.connectedParts > 0) html += `<div class="inventory-item">연결된 부품 <span class="inventory-count">${inventory.connectedParts}</span></div>`;
+            if (inventory.weldedAssemblies > 0) html += `<div class="inventory-item">용접된 조립품 <span class="inventory-count">${inventory.weldedAssemblies}</span></div>`;
+            if (inventory.cooledParts > 0) html += `<div class="inventory-item">냉각된 부품 <span class="inventory-count">${inventory.cooledParts}</span></div>`;
+            if (inventory.bentTubes > 0) html += `<div class="inventory-item">밴딩된 동관 <span class="inventory-count">${inventory.bentTubes}</span></div>`;
+            if (inventory.flaredEnds > 0) html += `<div class="inventory-item">플레어링 완료 <span class="inventory-count">${inventory.flaredEnds}</span></div>`;
+            
+            if (html === '') html = '<div class="info-box">아직 완료된 부품이 없습니다</div>';
+            document.getElementById('inventoryList').innerHTML = html;
+        }
+        
+        // 완료된 작업 수 업데이트
+        function updateCompleted() {
+            document.getElementById('completedTasks').textContent = `${completedTasks} / 8 작업 완료`;
+            
+            if (completedTasks === 8) {
+                showMessage('🏆 모든 실습을 완료했습니다! 축하합니다! 🎉', 3000);
+            }
+        }
+        
+        // 초기화
+        function resetAll() {
+            currentTask = 0;
+            tubeLength = 150;
+            bendingAngle = 90;
+            taskProgress = 0;
+            completedTasks = 0;
+            inventory = {
+                cutTubes: 0, drilledPipes: 0, connectedParts: 0,
+                weldedAssemblies: 0, cooledParts: 0, bentTubes: 0, flaredEnds: 0
+            };
+            
+            // 객체 삭제
+            objects.forEach(obj => scene.remove(obj));
+            objects.length = 0;
+            
+            // UI 초기화
+            document.querySelectorAll('.task-button').forEach(btn => btn.classList.remove('active'));
+            updateProgress(0);
+            updateInventory();
+            updateCompleted();
+            document.getElementById('taskStatus').textContent = '대기 중...';
+            showMessage('🔄 모든 작업이 초기화되었습니다!');
+        }
+        
+        // 마우스 추적
+        document.addEventListener('mousemove', (e) => {
+            document.getElementById('coordinates').textContent = 
+                `마우스: (${Math.round(e.clientX)}, ${Math.round(e.clientY)})`;
+        });
+        
+        // 반응형 처리
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // 애니메이션 루프
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // 객체 회전
+            objects.forEach(obj => {
+                obj.rotation.y += 0.005;
+            });
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // 초기 상태
+        updateInventory();
+        updateCompleted();
+        showMessage('🎮 3D 공조냉동 실습 시뮬레이터에 오신 것을 환영합니다!', 3000);
+    </script>
+</body>
+</html>
