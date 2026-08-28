@@ -771,7 +771,10 @@ def planner():
                 const month = currentDate.getMonth();
                 const firstDay = new Date(year,month,1);
                 const lastDay = new Date(year,month+1,0);
-                const startDate = new Date(firstDay);startDate.setDate(startDate.getDate()-firstDay.getDay());
+                const startDate = new Date(firstDay);
+                const day = firstDay.getDay();
+                const offset = (day === 0) ? 6 : (day - 1);
+                startDate.setDate(startDate.getDate() - offset);
                 
                 const container = document.getElementById('calendarDays');
                 container.innerHTML = '';
