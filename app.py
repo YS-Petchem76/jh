@@ -616,21 +616,21 @@ def planner():
             .btn-primary{background:#4d7ec7;color:white}
             .btn-primary:hover{background:#2c5aa0}
             .btn-primary.active{background:#2c5aa0;box-shadow:0 0 10px rgba(44,90,160,0.4)}
-            .calendar-container{background:white;border-radius:12px;padding:20px;box-shadow:0 4px 12px rgba(0,0,0,0.1);margin-bottom:30px}
-            .calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+            .calendar-container{background:white;border-radius:12px;padding:15px;box-shadow:0 4px 12px rgba(0,0,0,0.1);margin-bottom:30px}
+            .calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
             .calendar-header h2{color:#2c5aa0;font-size:24px}
             .nav-btn{padding:8px 12px;background:#e0e8f0;border:none;cursor:pointer;border-radius:4px;font-weight:bold}
             .nav-btn:hover{background:#c0d0e0}
-            .weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:10px}
-            .weekday{text-align:center;font-weight:bold;color:#4d7ec7;padding:10px;border-bottom:2px solid #4d7ec7}
-            .days{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
-            .day{min-height:120px;padding:10px;border:2px solid #e0e8f0;border-radius:6px;cursor:pointer;background:white;transition:0.3s}
+            .weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:5px}
+            .weekday{text-align:center;font-weight:bold;color:#4d7ec7;padding:6px;border-bottom:2px solid #4d7ec7;font-size:12px}
+            .days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+            .day{min-height:75px;padding:6px;border:1px solid #e0e8f0;border-radius:4px;cursor:pointer;background:white;transition:0.3s;overflow:hidden}
             .day:hover{border-color:#4d7ec7;background:#f0f4f8}
             .day.other-month{color:#ccc;background:#f8f8f8}
             .day.today{background:#d4e6f1;border-color:#2c5aa0;font-weight:bold}
-            .day-number{font-weight:bold;color:#1a3a4a;margin-bottom:5px}
-            .day-tasks{font-size:11px;color:#666}
-            .task-item{background:#e8f4f8;padding:3px 6px;margin:2px 0;border-radius:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+            .day-number{font-weight:bold;color:#1a3a4a;margin-bottom:2px;font-size:13px}
+            .day-tasks{font-size:10px;color:#666}
+            .task-item{background:#e8f4f8;padding:2px 4px;margin:1px 0;border-radius:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}
             .task-item.done{text-decoration:line-through;opacity:0.6}
             .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center}
             .modal.active{display:flex}
